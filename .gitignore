@@ -4,3 +4,4 @@ data/*
 .csv
 .kml
 .geojson
+.Rproj.user
