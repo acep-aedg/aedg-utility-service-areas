@@ -132,11 +132,30 @@ read_chronology_table <- function(cert_num) {
   chronology_table <- read_html(chronology_path) %>%
     html_element("table.RCAGrid") %>%
     html_table() # Table is already sorted with most recent events first
-  most_recent_row <- chronology_table[1, ]
-  return(most_recent_row)
+  if (cert_num == 13) {
+    # Two entries in GVEA's chronology table are missing dates. We will add them back manually.
+    # https://rca.alaska.gov/RCAWeb/Dockets/DocketDetails.aspx?id=7CC1B7AC-C9BB-4170-A9DB-28310A46DAF8
+    chronology_table <- chronology_table %>%
+      mutate(`Order Date` = ifelse(Order == "5E", "10/04/2012", `Order Date`)) %>%
+      mutate(`Order Date` = ifelse(Order == "5EE", "04/09/2013", `Order Date`)) 
+  }
+  chronology_table <- chronology_table %>%
+    mutate(`Order Date` = if_else(`Order Date` == "", "1/1/1900", `Order Date`)) # TODO: fix this bad solution.
+    # Not sure if this is good to do or not, but missing date should not be sorted first/newest
+  return(chronology_table)
 }
 
-safe_read_chronology_table <- possibly(read_chronology_table, otherwise = NA_character_)
+certificates.chronology <- data.frame()
+
+for (i in 1:nrow(certificates_csv)) {
+  cur_certificate_number <- certificates_csv[i, ]$certificate_number
+  certificates.chronology <- certificates.chronology %>% 
+    rbind(read_chronology_table(cur_certificate_number) %>%
+            mutate(`Order Date` = mdy(`Order Date`)) %>%
+            arrange(`Order Date`) %>%
+            mutate(Certificate = cur_certificate_number) %>%
+            select(c(Certificate, `Docket Number`, Order, `Order Date`), everything()))
+}
 
 certificates <- certificates_csv %>%
   rowwise() %>%
@@ -160,12 +179,20 @@ certificates <- certificates_csv %>%
   mutate(alt_name = ifelse(name_match, NA_character_, alt_name)) %>%
   select(-c(name_match, kml_utility_type)) %>% # Don't really need these right now
   rowwise() %>%
-  mutate(certificate_last_update_date = safe_read_chronology_table(certificate_number)$`Order Date` %>%
-           mdy() %>%
-           format('%m/%d/%y')) %>%
+  mutate(certificate_last_update_date = (certificates.chronology %>% 
+           filter(Certificate == certificate_number) %>% 
+           tail(n = 1))$`Order Date`) %>%
+           #mdy() %>%
+           #format('%m/%d/%y')) %>% # Should we maintain original date format?
+  mutate(certificate_last_update_type = (certificates.chronology %>% 
+                                           filter(Certificate == certificate_number) %>% 
+                                           tail(n = 1))$Type) %>%
+  mutate(certificate_last_update_description = (certificates.chronology %>% 
+                                                  filter(Certificate == certificate_number) %>% 
+                                                  tail(n = 1))$Comment) %>%
   mutate(kml_most_recent_update_date = str_extract(kml_most_recent_update_included, "[\\d]{1,2}\\/[\\d]{2}\\/([\\d]{4}|[\\d]{2})") %>%
-           mdy() %>%
-           format('%m/%d/%y')) %>%
+           mdy()) %>%
+           #format('%m/%d/%y')) %>%
   mutate(kml_has_latest_certificate_update = if_else(
     is.na(kml_most_recent_update_date) | is.na(certificate_last_update_date),
     NA,
