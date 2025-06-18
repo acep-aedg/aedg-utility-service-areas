@@ -4,13 +4,17 @@ library(glue)
 library(sf)
 library(httr)
 library(lubridate, warn.conflicts = FALSE)
+library(tmap)
 dir.create("data", showWarnings = FALSE)
 
 certificates_csv <- read_csv("rca_electric_certificates.csv") %>%
-  filter(`certificate_status` == "Active") #%>% # Filter to active utilities
+  filter(`certificate_status` == "Active") %>% # Filter to active utilities
+  distinct(certificate_number, .keep_all = TRUE) # Quick and dirty way to get rid of duplicate rows that refer to the same certificate that is "co-owned" by two different entities. This just keeps the first row. The certificate url is the same in both so it doesn't matter which one is kept.
 # filter(`utility_type` == "Electric") #Filter to electric utilities
 
 s <- session("https://rca.alaska.gov/RCAWeb/home.aspx")
+
+certs_missing_kml_files <- numeric(length = 0)
 
 download_kml_cert_and_chronology <- function(certificate) {
   start.time.outer <- Sys.time()
@@ -47,6 +51,7 @@ download_kml_cert_and_chronology <- function(certificate) {
         warning(glue(
           "Skipping download: KML URL for certificate {cert_number} not found."
         ))
+        certs_missing_kml_files <<- c(certs_missing_kml_files, cert_number) # Append/"combine" new id to the end, ugly global variable operator
       }
     }
     if (!cert_already_downloaded) {
@@ -96,7 +101,7 @@ download_kml_cert_and_chronology <- function(certificate) {
     }
   }
   end.time.outer <- Sys.time()
-  message(glue("Took {end.time.outer - start.time.outer} seconds to run function for certificate {cert_number}."))
+  # message(glue("Took {end.time.outer - start.time.outer} seconds to run function for certificate {cert_number}."))
 }
 
 for (i in 1:nrow(certificates_csv)) {
@@ -152,6 +157,7 @@ for (i in 1:nrow(certificates_csv)) {
   cur_certificate_number <- certificates_csv[i, ]$certificate_number
   if (i > 1 && cur_certificate_number == certificates_csv[i-1, ]$certificate_number) {
     # Some utilities have two rows in the CSV. Until that is fixed, skip adding the same chronology table twice.
+    # TODO no longer needed
     next
   }
   certificates.chronology <- certificates.chronology %>% 
@@ -230,4 +236,20 @@ certificates <- certificates_csv %>%
     NA,
     kml_has_newest_service_area_updates(certificate_number, kml_most_recent_update_date))) %>%
   ungroup()
-   # TODO: remove duplicates. Should just remove them at beginning when reading from csv
+
+# TODO: warning, kmls for certs_missing_kml_files are missing 
+
+file_list <- list.files("data/", pattern = "-servicearea.kml$", full.names = TRUE)
+sf_list <- map(file_list, ~st_read(.x, quiet = TRUE))
+merged <- bind_rows(sf_list) %>%
+  mutate(certificate_number = as.numeric(str_extract(Name, regex("(?!Certificate No. )[\\d]+")))) %>%
+  select(-c(Name, Description)) %>%
+  select(certificate_number, everything()) %>%
+  inner_join(certificates, by=join_by(certificate_number))
+
+sf_use_s2(FALSE)
+tmap_mode("view")
+tm_shape(merged) +
+  tm_polygons()
+
+st_write(merged %>% filter(utility_type == "Electric"), "test.geojson")
