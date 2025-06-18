@@ -244,7 +244,6 @@ sf_list <- map(file_list, ~st_read(.x, quiet = TRUE))
 merged <- bind_rows(sf_list) %>%
   mutate(certificate_number = as.numeric(str_extract(Name, regex("(?!Certificate No. )[\\d]+")))) %>%
   select(-c(Name, Description)) %>%
-  select(certificate_number, everything()) %>%
   inner_join(certificates, by=join_by(certificate_number))
 
 sf_use_s2(FALSE)
