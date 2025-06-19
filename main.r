@@ -235,6 +235,7 @@ certificates <- certificates_csv %>%
     is.na(kml_most_recent_update_date), 
     NA,
     kml_has_newest_service_area_updates(certificate_number, kml_most_recent_update_date))) %>%
+  relocate(kml_most_recent_update_date, .after = kml_most_recent_update_included) %>%
   ungroup()
 
 # TODO: warning, kmls for certs_missing_kml_files are missing 
@@ -246,9 +247,9 @@ merged <- bind_rows(sf_list) %>%
   select(-c(Name, Description)) %>%
   inner_join(certificates, by=join_by(certificate_number))
 
-sf_use_s2(FALSE)
-tmap_mode("view")
-tm_shape(merged) +
-  tm_polygons()
+#sf_use_s2(FALSE)
+#tmap_mode("view")
+#tm_shape(merged) +
+#  tm_polygons(fill_alpha=0.5)
 
-st_write(merged %>% filter(utility_type == "Electric"), "test.geojson")
+st_write(merged %>% filter(utility_type == "Electric"), glue("test-{as.integer(Sys.time())}.geojson"))
