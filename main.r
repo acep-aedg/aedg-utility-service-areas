@@ -12,11 +12,13 @@ certificates_csv <- read_csv("rca_electric_certificates.csv") %>%
   distinct(certificate_number, .keep_all = TRUE) # Quick and dirty way to get rid of duplicate rows that refer to the same certificate that is "co-owned" by two different entities. This just keeps the first row. The certificate url is the same in both so it doesn't matter which one is kept.
 # filter(`utility_type` == "Electric") #Filter to electric utilities
 
-# This code adds a new field to certificates_csv - "entity-type" (utility vs operator)
-# RCA also issues certificates to operators, who sell power to utilities, but don't actually service any households or customers.
-# They do not have "service areas" and the ones assigned by RCA do not make very much sense. 
+# This code adds a new field to certificates_csv - "entity_type" (utility or operator)
+# An operator produces electricity and sells all its electric output to a utility or utilities.
+# A utility distributes/delivers electricity to the customers who live in its service area. Most utilities in Alaska generate some or all of their own electricity (in other words, not all utilities purchase electricity from operators).
+# RCA issues certificates to utilities, and also issues certificates to operators, who sell power to utilities, but don't actually service any households or customers.
+# Operators do not have "service areas" and the ones assigned by RCA do not make very much sense. 
 # For example, it might be a circle around a wind farm or a random spot in a lake.
-# We need to add this field so we can easily distinguish between these two types of entities, exclude the psuedo-service areas of operators, and add operators to a point layer instead of representing them with polygons.
+# We need to add this field so we can easily distinguish between these two types of entities, enabling us to exclude the psuedo-service areas of operators, and add operators to a point layer instead of representing them with polygons.
 # https://github.com/acep-uaf/utility-service-areas/issues/18
 
 operator_ids <- c(
@@ -78,7 +80,12 @@ operator_ids <- c(
   # https://fnsb.gov/DocumentCenter/View/1155/Presentation--District-Heating-Aurora-Energy-PDF
   # https://usibelli.com/company/customers
   # https://www.gvea.com/services/energy/sources-of-power/
-  520
+  520,
+  # Aleutian Wind Energy, LLC, subsidiary of TDX Power, owns and operates a wind power project in Sand Point, Alaska
+  # TDX Sand Point Generating, LLC, subsidiary of TDX Holdings, purchases wind-power generated electric energy from the project
+  # TDX Power and TDX Holdings are subsidiaries of Tanadgusix Corporation
+  # https://rca.alaska.gov/RCAWeb/ViewFile.aspx?id=edfd7897-9f53-491b-928c-757dd28efd3d
+  735
 )
 
 # Delete rows representing certificates that are inactive but mistakenly are still assigned active status by RCA
