@@ -100,6 +100,8 @@ operator_ids <- c(
 # Delete rows representing certificates that are inactive but mistakenly are still assigned active status by RCA
 
 inactive_ids <- c(
+  # https://github.com/acep-uaf/utility-service-areas/issues/23
+  59,
   # https://github.com/acep-uaf/utility-service-areas/issues/15
   71,
   # https://github.com/acep-uaf/utility-service-areas/issues/19
