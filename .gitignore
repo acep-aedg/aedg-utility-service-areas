@@ -2,7 +2,7 @@
 data/*
 .DS_Store
 # .csv
-.kml
-.geojson
-.Rproj.user
-.Rhistory
+*.kml
+*.geojson
+*.Rproj.user
+*.Rhistory
