@@ -2,7 +2,7 @@
    type: website
 
  website:
-   title: "test-quarto-site"
+   title: "Service area explorer"
    navbar:
      left:
        - href: index.qmd
