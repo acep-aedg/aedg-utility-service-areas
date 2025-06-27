@@ -226,15 +226,14 @@ map = {
     
       // Get the current map bounds
         const bounds = map.getBounds();
-    
+        
       // Temp comment this out, I feel like it's probably OK for the user to scroll around and keep the communities scrolled out of view on the map  
       // Remove old markers
       //  currentMarkers.forEach((marker) => map.removeLayer(marker));
       //  currentMarkers.length = 0;
     
-      // Render only markers that are within the map bounds
-        let communitiesNotShown = communities.filter((x)=>!communities.shown);
-        communitiesNotShown.forEach((community) => {
+        // Render only markers that are within the map bounds
+        communities.filter((x)=>!x.shown).forEach((community) => {
           const position = [community.lat, community.lon];
     
         // Check if the community is within the current map bounds
@@ -243,7 +242,7 @@ map = {
             opacity: 1,
             color: 'red'
           }).bindTooltip(community.name);
-          console.log("Added marker for " + community.name);;
+          // console.log("Added marker for " + community.name);;
           marker.addTo(map);
           currentMarkers.push(marker);
           community.shown = true;
