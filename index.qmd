@@ -252,6 +252,7 @@ map = {
       // Clear existing markers if zoomed out
       currentMarkers.forEach((marker) => map.removeLayer(marker));
       currentMarkers.length = 0;
+      communities.forEach((community) => community.shown = false);
     }
   };
   
