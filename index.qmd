@@ -151,16 +151,15 @@ map = {
 
   L.control.scale({imperial: true, metric: true}).addTo(map);
   
-  let communityMarkers  = new L.FeatureGroup();
+  //let communityMarkers  = new L.FeatureGroup();
+  let communities = [];
   
   // https://github.com/HandsOnDataViz/leaflet-map-csv/blob/main/index.html
   fetch('https://raw.githubusercontent.com/acep-aedg/aedg-data-pond/refs/heads/main/data/public/public_communities.csv')
     .then((response) => response.text())
     .then((csvString) => {
-      let data = Papa.parse(csvString, {header: true, dynamicTyping: true}).data;
+      let data = Papa.parse(csvString, {header: true, dynamicTyping: true, skipEmptyLines: true}).data;
 
-    // For each row in data, create a marker and add it to the map
-    // For each row, columns `Latitude`, `Longitude`, and `Title` are required
       for (let i in data) {
         let row = data[i];
   
@@ -171,11 +170,8 @@ map = {
           stroke: false,
           fillOpacity: 0.75
         }).bindTooltip(row.name);*/
-        let marker = L.marker([row.latitude, row.longitude], {
-          opacity: 1,
-          color: 'red'
-        }).bindTooltip(row.name);
-        communityMarkers.addLayer(marker);
+        communities.push({name: row.name, lat: row.latitude, lon: row.longitude, shown: false});
+        //communityMarkers.addLayer(marker);
         //marker.addTo(map);
       }
     })
@@ -219,21 +215,52 @@ map = {
     }
   }).addTo(map);
   
-  // map.fitBounds(geoJSON.getBounds());
-  
+  let currentMarkers = [];
+
+  // Instead of hiding all marker layers based on zoom level as shown in the link, which has poor performance on my phone, selectively show markers based on position in map bounds
   // https://gis.stackexchange.com/questions/258515/show-hide-markers-depending-on-zoom-level
-  map.on('zoomend', function() {
-    // console.log(map.getZoom())
-    if (map.getZoom() < 8) {
-            map.removeLayer(communityMarkers);
+
+  function renderMarkers()  {
+    if (map.getZoom() >= 7) { // maybe 8 if desktop and 7 if mobile/small screen
+      // Adapted from https://medium.com/@silvajohnny777/optimizing-leaflet-performance-with-a-large-number-of-markers-0dea18c2ec99
+    
+      // Get the current map bounds
+        const bounds = map.getBounds();
+    
+      // Temp comment this out, I feel like it's probably OK for the user to scroll around and keep the communities scrolled out of view on the map  
+      // Remove old markers
+      //  currentMarkers.forEach((marker) => map.removeLayer(marker));
+      //  currentMarkers.length = 0;
+    
+      // Render only markers that are within the map bounds
+        let communitiesNotShown = communities.filter((x)=>!communities.shown);
+        communitiesNotShown.forEach((community) => {
+          const position = [community.lat, community.lon];
+    
+        // Check if the community is within the current map bounds
+        if (bounds.contains(position)) {
+          let marker = L.marker(position, {
+            opacity: 1,
+            color: 'red'
+          }).bindTooltip(community.name);
+          console.log("Added marker for " + community.name);;
+          marker.addTo(map);
+          currentMarkers.push(marker);
+          community.shown = true;
+        }
+      });
     } else {
-            map.addLayer(communityMarkers);
+      // Clear existing markers if zoomed out
+      currentMarkers.forEach((marker) => map.removeLayer(marker));
+      currentMarkers.length = 0;
     }
-  });
+  };
+  
+  map.on('moveend', renderMarkers);
+  map.on('zoomend', renderMarkers);
   
   // TODO: add legend https://stackoverflow.com/questions/59453642/how-to-add-legend-in-leaflet-map
 
 }
 
 ```
-
