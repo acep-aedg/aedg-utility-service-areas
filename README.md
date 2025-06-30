@@ -123,14 +123,9 @@ The Alaska Center for Energy and Power will maintain the repository and ensure t
 To successfully implement this Data Management Plan (DMP), the project relies primarily on free and
 open-source tools and platforms, ensuring accessibility and cost-effectiveness. The following resources
 are required:
-1. Digital Infrastructure
-GitHub
-Zenodo (optional)
-2. Software and Libraries
-R
-3. Metadata and documentation and Governance
-Written documentation to guide contributors, researchers, and users.
-Clear protocols for pull requests, data validation, and metadata curation
+1. Digital Infrastructure - GitHub, Zenodo (maybe)
+2. Software and Libraries - R, tidyverse
+3. Metadata and documentation
 
 </details>
 
