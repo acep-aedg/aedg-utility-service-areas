@@ -1,8 +1,137 @@
 # utility-service-areas -- DRAFT
 
-This repository contains the source code for the data pipeline that processes KML files of authorized service areas for electric utilities in Alaska. Utilities in Alaska are regulated by the Regulatory Commission of Alaska, which provides the boundaries of these service areas to the public through their website. These boundaries are invaluable for reseachers who are studying energy rates in communities across Alaska, especially since the majority of Alaskans are served by microgrid systems which are not interconnected to a broader traditional power grid. 
+This repository contains the source code for the data pipeline that processes KML files of authorized service areas for electric utilities in Alaska. Utilities in Alaska are regulated by the Regulatory Commission of Alaska, which provides the boundaries of these service areas to the public through their website. These boundaries are invaluable for researchers who are studying energy rates in communities across Alaska, especially since the majority of Alaskans are served by microgrid systems which are not interconnected to a broader traditional power grid. 
 
 The goal of this project is to create a single geospatial file in GeoJSON format which contains the service area boundaries of every active electric utility in Alaska. No such file currently exists, and creating one manually by downloading and combining hundreds of KML files from the RCA website would be time-consuming and tedious. The creation of this resource will support future Alaskan energy research, and make it easier to answer questions like:
 1. Do electrical service areas overlap?
 2. Which utility serves the largest area? The smallest?
 3. What utility serves a specific location or community?
+
+<details><summary>Data Management Plan (draft)</summary>
+
+## Data Collection
+
+**What data will you collect or create?**
+
+This project will create a geospatial dataset containing the service areas for utilities certificated by the Regulatory Commission of Alaska (RCA). The RCA's website provides the boundaries of each utility's service area in KML or PDF format, as well as a legal description typically using the Public Land Survey System (PLSS). However, the RCA does not publish a compiled dataset of these service area polygons, and no such dataset currently exists. 
+
+What will be collected:
+
+ - Individual service area files published and made available for download by the RCA
+ 
+What will be created:
+
+- A geospatial dataset in GeoJSON format containing the service areas for all utilities certificated by the Regulatory Commission of Alaska
+- R script for data collection, cleaning, and export
+- Metadata for the service areas dataset
+- Documentation and README
+- [TBD] Script/data files integrating with AEDG
+
+**How will the data be collected or created?**
+
+The service area data collected in this project are published by the Regulatory Commission of Alaska. The data collection, cleaning, etc. process uses open source tools and libraries such as R, tidyverse, etc. 
+
+The created dataset will be stored and versioned through the project’s GitHub repository, following a well-defined folder structure and accompanied by metadata. Although the original files used to generate the dataset will not be stored on GitHub, the scripts used in the data processing and cleaning process will be stored and documented to ensure reproducibility.
+
+## Documentation and Metadata
+
+**What documentation and metadata will accompany the data?**
+
+All datasets in the project will be accompanied by structured metadata and supporting documentation
+to ensure that the project and published data meets FAIR principles. The documentation strategy includes:
+1. Metadata
+
+TBD
+
+2. Project Documentation
+
+A detailed README file at the root of the GitHub repository explains the project’s objectives,
+folder structure, data types, software dependencies, and instructions for running the data pipeline/R scripts
+R scripts are documented with inline comments for each step, including beginner-
+friendly explanations.
+... TBD
+
+
+## Ethics and Legal Compliance
+
+**How will you manage ethical, copyright and Intellectual Property Rights (IP/IPR) issues?**
+
+
+This project does not involve human participants, personal data, or sensitive information.
+The service areas of utilities certificated by the RCA are public information and a matter of public record. 
+The project and created dataset will be made available under an open license. Datasets, scripts, and tools used in the project are appropriately credited. 
+
+## Storage and Backup
+**How will the data be stored and backed up during the research?**
+
+Project data and scripts are hosted in a GitHub repository. Project participants also store working copies of the repository on local machines, synchronized regularly with GitHub using git pull and git push commands.
+
+**How will you manage access and security?**
+
+Only authorized team members have permissions to merge pull requests to the main branch of the GitHub repository.
+External collaborators may submit pull requests but do not have write access to the GitHub repository.
+
+## Selection and Preservation
+**Which data are of long-term value and should be retained, shared, and/or preserved?**
+
+The following data products generated by this project are considered to be of long-term value and will
+be retained, shared, and preserved for future use:
+1. Geospatial layers produced in the project (GeoJSONs) - service areas layer
+2. All R scripts and notebooks used for data acquisition, cleaning, processing, etc. are maintained as reusable and reproducible tools.
+3. Documentation and Metadata - Files such as README.md contain essential descriptions of the project, datasets, and procedures and are considered critical for understanding and reusing the data.
+4. Project Repository (GitHub)
+
+The entire GitHub repository is preserved indefinitely as the primary platform for version control and public sharing of the project.
+These resources will remain openly accessible under open licenses.
+
+**What is the long-term preservation plan for the dataset?**
+
+The long-term preservation strategy focuses on ensuring accessibility, integrity, and usability of the
+datasets well beyond the project’s completion, using a combination of open repositories, version
+control, and redundant storage.
+Github repository with metadata and documentation under an open license 
+
+The repository may be mirrored to Zenodo or similar data preservation platforms that
+provide DOI assignment and archiving for long-term citation and academic referencing.
+
+## Data Sharing
+**How will you share the data?**
+
+The data will be shared following the principles of open science, ensuring that it is freely accessible,
+well-documented, and reusable by researchers, institutions, and the general public.
+1. GitHub Public Repository
+2. File Organization and Metadata
+3. Open Licensing
+4. Outreach and Indexing
+The project may be indexed in data catalogs such as Zenodo (with DOI assignment) or OpenAIRE,
+enhancing discoverability.
+Links and documentation will also be shared through academic channels, institutional repositories, and
+presentations at events and symposia.
+This sharing strategy ensures maximum accessibility, impact, and sustainability of the geospatial data
+generated by the project.
+
+**Are any restrictions on data sharing required?**
+
+No formal restrictions on data sharing are required for this project. 
+
+## Responsibilities and Resources
+**Who will be responsible for data management?**
+
+The Alaska Center for Energy and Power will maintain the repository and ensure that researchers and the public continue to have access to the most current and complete version of the service areas data.
+
+**What resources will you require to deliver your plan?**
+
+To successfully implement this Data Management Plan (DMP), the project relies primarily on free and
+open-source tools and platforms, ensuring accessibility and cost-effectiveness. The following resources
+are required:
+1. Digital Infrastructure
+GitHub
+Zenodo (optional)
+2. Software and Libraries
+R
+3. Metadata and documentation and Governance
+Written documentation to guide contributors, researchers, and users.
+Clear protocols for pull requests, data validation, and metadata curation
+
+</details>
+
