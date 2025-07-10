@@ -403,7 +403,7 @@ merged_processed_electric_service_areas <- bind_rows(sf_list) %>%
 ## AVEC
 
 # TODO: make array of patches and iterate through - maybe two columns, cert1 cert2. basically doing cert1 += cert2 for every row
-# TODO: only patch if KML is out-of-date (date = 2002 for AVEC, etc) or if KML does not contain target service areas
+# TODO: only patch if KML is out-of-date and has expected (hard-coded date) (date = 2002 for AVEC, etc) or if KML does not already contain target service areas
 merged_processed_electric_service_areas <- merged_processed_electric_service_areas %>% 
   rowwise() %>% 
   mutate(geometry = if (certificate_number == 169) {
