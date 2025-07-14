@@ -381,7 +381,12 @@ certificates <- certificates_csv.electric_filtered %>%
   relocate(kml_most_recent_update_date, .after = kml_most_recent_update_included) %>%
   ungroup()
 
+###########
+
 # BEGIN MANUAL PATCHING OF SERVICE AREAS
+
+###########
+
 
 patch_effective_versions <- tribble(
   # We don't want to mess around and merge kmls together unless we're absolutely sure that we are correcting data and not introducing errors.
@@ -396,7 +401,9 @@ patch_effective_versions <- tribble(
   635, "2001-07-05",
   412, "1988-11-28",
   365, "1990-04-25",
-  741, NA # KML for cert 741 is missing from RCA's site - doesn't exist
+  # KMLs missing from RCA's site
+  741, NA,
+  767, NA
 )
 
 merge_patches <- tribble(
@@ -421,10 +428,12 @@ plss_patches <- tribble(
   635, c("S009N067W05", "S009N067W06", "S010N067W31", "S010N067W32"), # Fixing error in Akiak service area description https://github.com/acep-uaf/utility-service-areas/issues/11
   412, c("S010N068W31", "S010N069W36"), # Fixing error in Akiachak service area description https://github.com/acep-uaf/utility-service-areas/issues/12
   365, c("S001N086W19", "S001N086W20", "S001N086W21", "S001N086W28", "S001N086W29", "S001N086W30"), # Fixing error in Chefornak service area description https://github.com/acep-uaf/utility-service-areas/issues/16,
+  # Creating missing KMLs https://github.com/acep-uaf/utility-service-areas/issues/8
   741, c("K018S010W28", "K018S010W29", "K018S010W30", "K018S010W31", "K018S010W32",
          "K018S011W09", "K018S011W16", "K018S011W21", "K018S011W22", "K018S011W23",
          "K018S011W26", "K018S011W27", "K018S011W28", "K018S011W34", "K018S011W35", "K018S011W36",
-         "K019S011W01", "K019S011W02", "K019S011W03") # Creating missing KML for Unalakleet Valley Electric https://github.com/acep-uaf/utility-service-areas/issues/8
+         "K019S011W01", "K019S011W02", "K019S011W03"), # Unalakleet Valley Electric
+  767, c("F017N009E21", "F017N009E22", "F017N009E27", "F017N009E28", "F017N009E33", "F017N009E34") # Birch Creek Tribal Council
 ) %>% unnest(corrected_plss_description) %>%
   group_by(cert) %>%
   summarise(
