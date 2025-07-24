@@ -7,14 +7,73 @@ library(lubridate, warn.conflicts = FALSE)
 library(tmap)
 dir.create("data", showWarnings = FALSE)
 
-certificates_csv <- read_csv("rca_electric_certificates.csv") %>%
-  # filter(`certificate_status` == "Active") %>% # Filter to active utilities
-  distinct(certificate_number, .keep_all = TRUE) # Quick and dirty way to get rid of duplicate rows that refer to the same certificate that is "co-owned" by two different entities. This just keeps the first row. The certificate url is the same in both so it doesn't matter which one is kept.
-# filter(`utility_type` == "Electric") #Filter to electric utilities
-
-# TODO in future: check # of entries on live RCA site, make sure matches input csv
-
 s <- session("https://rca.alaska.gov/RCAWeb/home.aspx")
+
+# This query will return a list of all electric utilities certificated by RCA
+certificates_list_url <- "https://rca.alaska.gov/RCAWeb/RCALibrary/SearchResults.aspx?t=cert&p=typesearch&cert=&entity=&utiltype=fb3aa508-d4ce-40d9-8e4a-602912321bce"
+if (!file.exists("rca_electric_certificates.csv")) {
+  start.time <- Sys.time()
+  message("Downloading list of electric certificates from RCA site...")
+  s <- s %>% session_jump_to(certificates_list_url)
+  certificate_count <- s %>%
+    html_element(".count") %>%
+    html_text2() %>%
+    str_extract(regex("\\d+")) %>%
+    as.numeric()
+  if (certificate_count > 200) {
+    stop("There are more than 200 electric certificates listed on the RCA site. Downloading more than 200 (i.e. paginating multiple pages of 200) is unimplemented")
+  }
+  message(glue("{certificate_count} certificates listed on RCA site, formatting and removing duplicates..."))
+  form <- html_form(s)[[1]]
+  # or
+  # field_values <- lapply(form$fields, function(x) x$value) %>%
+  # set_names(map_chr(form$fields, "name"))
+  # Because __EVENTTARGET doesn't get detected as a field by rvest we can't use html_form_set/html_form_submit, instead we have to use httr
+  field_values <- map(form$fields, "value") %>%
+    set_names(map_chr(form$fields, "name"))
+  field_values[["PortalPageControl1:_ctl6:searchResultCert:certGridHeader:ddlNumberPerPage"]] <- "200"
+  session_id = (cookies(s) %>%
+                  filter(name == "ASP.NET_SessionId"))[1, ]$value
+  response <- POST(
+    url = certificates_list_url,
+    body = field_values,
+    encode = "form",
+    set_cookies(`ASP.NET_SessionId` = session_id)
+    # verbose()
+  ) %>% 
+    read_html() %>%
+    html_element("table.RCAGrid")
+  table <- response %>%
+    html_table()
+  links <- response %>%
+    html_nodes(xpath = "//td/a")
+  text_and_links <- tibble(
+    text = links %>% html_text2(),
+    href = links %>% html_attr("href")
+  ) %>%
+    distinct(text, .keep_all = TRUE) %>%
+    filter(!(str_detect(href, regex("\\?id=$"))))
+  colnames(table) <- table[2,] %>% 
+    tolower() %>% 
+    gsub(" ", "_", .)
+  out_certificate_csv <- table %>%
+    slice(-(1:2), -nrow(table)) %>%
+    distinct(certificate_number, .keep_all = TRUE) %>%
+    left_join(text_and_links, by = join_by(certificate_number == text)) %>%
+    rename(cpcn_url = href) %>%
+    left_join(text_and_links, by = join_by(entity == text)) %>%
+    rename(entity_url = href)
+  out_certificate_csv$certificate_number <- as.numeric(out_certificate_csv$certificate_number)
+  
+  out_certificate_csv[is.na(out_certificate_csv)] <- ""
+  message(glue("Saving list of {nrow(out_certificate_csv)} unique electric certificates to CSV..."))
+  write_csv(out_certificate_csv, "rca_electric_certificates.csv")
+  end.time <- Sys.time()
+  message(glue("Took {end.time - start.time} seconds to gather list of certificates from RCA site."))
+}
+
+certificates_csv <- read_csv("rca_electric_certificates.csv")
+
 
 certs_missing_kml_files <- numeric(length = 0)
 
@@ -117,8 +176,8 @@ sf_use_s2(TRUE)
 
 file_list <- list.files("data", pattern = "-servicearea.kml$", full.names = TRUE)
 sf_list <- map(file_list, ~st_read(.x, quiet = TRUE))
-# Just merge all service areas, active and inactive, electric, natural gas, heat, or otherwise. No manual filtering/patching.
-# It's pretty common for inactive service areas, especially old/obscure ones, to not have kmls. So this "raw" layer will still have less rows than the total # of utilities.
+# Just merge all electric service areas, active and inactive. No manual filtering/patching yet.
+# It's pretty common for inactive service areas, especially old/obscure ones, to not have kmls. So this "raw" layer will still have less rows than the total # of electric utilities.
 merged_raw <- bind_rows(sf_list) %>%
   mutate(certificate_number = as.numeric(str_extract(Name, regex("(?!Certificate No. )[\\d]+(\\.[\\d]+)?")))) %>% # Regex needs to match CPCN "18.1"
   select(-c(Name, Description)) %>%
@@ -135,11 +194,7 @@ merged_raw <- bind_rows(sf_list) %>%
 #tm_shape(merged) +
 #  tm_polygons(fill_alpha=0.5)
 
-st_write(merged_raw, glue("service-areas-raw-all.geojson"))
-st_write(merged_raw %>% filter(utility_type == "Electric"), glue("service-areas-raw-electric.geojson"))
-st_write(merged_raw %>% filter(utility_type != "Electric"), glue("service-areas-raw-nonelectric.geojson"))
-
-
+st_write(merged_raw, glue("service-areas-raw.geojson"))
 
 #### Begin manual patching
 # Below this line we are modifying/deleting service areas (for good reason), however, 
