@@ -52,7 +52,7 @@ hide_sidebar = function () {
 
 button_code = `<button type="button" class="btn-close position-absolute top-0 end-0 m-2" aria-label="Close" onclick="(${hide_sidebar})()"></button>`;
 
-welcome_message = `${button_code}<h3>Alaska electric utilities service area explorer</h3><br><br><br>This interactive map enables you to view Alaskan electric utility service areas.<br><br>Try browsing around the map and clicking on a utility service area `;
+welcome_message = `${button_code}<h3>Alaska electric utilities service area explorer</h3><br>This interactive map enables you to view Alaskan electric utility service areas.<br><br>Try browsing around the map and clicking on a utility service area `;
 mutable name = ""; // TODO: find a way to do this without mutable
 mutable cpcn_url = "";
 mutable granted_year = "";
@@ -96,11 +96,24 @@ viewof container = DOM.element('div', { style: `height:85vh` });
 map = {
 
   // create map object
-  let map = L.map(viewof container).setView([62.945279601222396, -155.5946697727831], 5);
+  let map = L.map(viewof container);
+  map.on('load', function(event){
+    // get the width of the screen after the resize event
+    var width = document.documentElement.clientWidth;
+    // tablets are between 768 and 922 pixels wide
+    // phones are less than 768 pixels wide
+    if (width < 768) {
+        map.setZoom(4);
+    }  
+  });
+
+  map.setView([62.945279601222396, -155.5946697727831], 5);
   // https://github.com/kbvernon/hndsr-watersheds/blob/main/observable-map.qmd#L122
   // add basemap
   
   window.___MAP = map;
+  
+  
   
   map.whenReady(()=> {
     //console.log('whenReady fired');
@@ -263,7 +276,12 @@ map = {
   map.on('zoomend', renderMarkers);
   
   // TODO: add legend https://stackoverflow.com/questions/59453642/how-to-add-legend-in-leaflet-map
+  
+
+
 
 }
+
+
 
 ```
