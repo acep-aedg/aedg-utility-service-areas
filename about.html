@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>About – Service area explorer</title>
+<title>About – Alaska electric service areas dataset</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -81,7 +81,7 @@ ul.task-list li input[type="checkbox"] {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="./index.html">
-    <span class="navbar-title">Service area explorer</span>
+    <span class="navbar-title">Alaska electric service areas dataset</span>
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
@@ -114,7 +114,10 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#about-this-project" id="toc-about-this-project" class="nav-link active" data-scroll-target="#about-this-project">About this project</a></li>
+  <li><a href="#about-this-project" id="toc-about-this-project" class="nav-link active" data-scroll-target="#about-this-project">About this project</a>
+  <ul class="collapse">
+  <li><a href="#you-can-explore-the-service-areas-on-an-interactive-map-and-visit-the-alaska-energy-data-gateway-to-see-the-dataset-in-action." id="toc-you-can-explore-the-service-areas-on-an-interactive-map-and-visit-the-alaska-energy-data-gateway-to-see-the-dataset-in-action." class="nav-link" data-scroll-target="#you-can-explore-the-service-areas-on-an-interactive-map-and-visit-the-alaska-energy-data-gateway-to-see-the-dataset-in-action.">You can explore the service areas on an interactive map, and visit the Alaska Energy Data Gateway to see the dataset in action.</a></li>
+  </ul></li>
   <li><a href="#download-the-data" id="toc-download-the-data" class="nav-link" data-scroll-target="#download-the-data">Download the data</a></li>
   <li><a href="#github-repository" id="toc-github-repository" class="nav-link" data-scroll-target="#github-repository">GitHub repository</a></li>
   <li><a href="#metadata" id="toc-metadata" class="nav-link" data-scroll-target="#metadata">Metadata</a>
@@ -163,14 +166,17 @@ ul.task-list li input[type="checkbox"] {
 <li>The State of Alaska <a href="https://dcra-cdo-dcced.opendata.arcgis.com/search?q=rca">Division of Community and Regional Affairs</a> (DCRA) also provides service area layers for electric, water, sewer, and natural gas utilities certificated by the RCA. For more information, visit the DCRA open data portal at <a href="https://dcra-cdo-dcced.opendata.arcgis.com/search?q=rca" class="uri">https://dcra-cdo-dcced.opendata.arcgis.com/search?q=rca</a></li>
 </ul>
 <p>Note: before using this data in your project, please read this entire page to learn more about how this dataset was assembled. Because of source data quality issues, this dataset does not contain every utility’s service area, and if it does, it might not be up-to-date.</p>
+<section id="you-can-explore-the-service-areas-on-an-interactive-map-and-visit-the-alaska-energy-data-gateway-to-see-the-dataset-in-action." class="level3">
+<h3 class="anchored" data-anchor-id="you-can-explore-the-service-areas-on-an-interactive-map-and-visit-the-alaska-energy-data-gateway-to-see-the-dataset-in-action.">You can explore the service areas on an <a href=".">interactive map</a>, and visit the <a href="https://akenergygateway.alaska.edu/explore/communities/anchorage">Alaska Energy Data Gateway</a> to see the dataset in action.</h3>
+</section>
 </section>
 <section id="download-the-data" class="level1">
 <h1>Download the data</h1>
-<p>Download the latest version of the GeoJSON file: <a href="./service-areas-v2-metadata.geojson" target="_blank" download="">Download now</a></p>
+<p>Download the latest version of the GeoJSON file: <a href="./service-areas.geojson" target="_blank" download="">Download now</a></p>
 </section>
 <section id="github-repository" class="level1">
 <h1>GitHub repository</h1>
-<p>Access the GitHub repository here: https://github.com/acep-uaf/utility-service-areas</p>
+<p>Access the GitHub repository here: <a href="https://github.com/acep-aedg/aedg-utility-service-areas" class="uri">https://github.com/acep-aedg/aedg-utility-service-areas</a></p>
 </section>
 <section id="metadata" class="level1">
 <h1>Metadata</h1>
@@ -178,9 +184,9 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="description-of-fields">Description of fields</h2>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 25%">
-<col style="width: 25%">
-<col style="width: 48%">
+<col style="width: 26%">
+<col style="width: 26%">
+<col style="width: 47%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -468,7 +474,7 @@ ul.task-list li input[type="checkbox"] {
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp("https:\/\/acep-uaf\.github\.io\/utility-service-areas\/");
+        var filterRegex = new RegExp("https:\/\/acep-aedg\.github\.io\/aedg-utility-service-areas\/");
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }
