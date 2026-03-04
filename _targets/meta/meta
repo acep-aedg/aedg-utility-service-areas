@@ -644,6 +644,9 @@ plss_patches_kmls_363fc81aae058d8b|branch|a2631f6de69b5c54|9f44885f5c6fb0c8|fac9
 plss_patches_kmls_e5b73510cb8a2c29|branch|75961e6ee725c355|9f44885f5c6fb0c8|fac980ad628b7067|1973483043|/Users/liam/repos/utility-service-areas/data/765-servicearea-plss-fix.kml|t20480.1616515172s|s740b|740|file|local|vector|plss_patches_kmls||0.559|GDAL Message 1: Layer name '765-servicearea-plss-fix' adjusted to '765_servicearea_plss_fix' for XML validity.|
 plss_patches_kmls_8a07d4f5eaf46084|branch|e1265d3944d9f968|9f44885f5c6fb0c8|fac980ad628b7067|1452904219|/Users/liam/repos/utility-service-areas/data/767-servicearea-plss-fix.kml|t20480.1616580707s|s877b|877|file|local|vector|plss_patches_kmls||0.555|GDAL Message 1: Layer name '767-servicearea-plss-fix' adjusted to '767_servicearea_plss_fix' for XML validity.|
 plss_patches_kmls|pattern|25f8b78ea3b5ae6f|9f44885f5c6fb0c8||-1940298076||||7441|file|local|vector||plss_patches_kmls_6cc623306a32a339*plss_patches_kmls_9e0d936937f43936*plss_patches_kmls_92316c9136a5873c*plss_patches_kmls_75ad1173dde52dab*plss_patches_kmls_350f51ff0855a594*plss_patches_kmls_363fc81aae058d8b*plss_patches_kmls_e5b73510cb8a2c29*plss_patches_kmls_8a07d4f5eaf46084|5.996||
+generate_unalaska_service_area|function|6a081b5702e295fe
+.Random.seed|object|a4f1b5e4ed786290
+unalaska_service_area|stem|8485643454968ccc|48580bc8ecc8abd7|ea764f6941382e9c|175367005||t20516.9375962863s|s11658b|11658|rds|local|vector|||1.237|attribute variables are assumed to be spatially constant throughout all geometries. attribute variables are assumed to be spatially constant throughout all geometries. attribute variables are assumed to be spatially constant throughout all geometries. attribute variables are assumed to be spatially constant throughout all geometries. repeating attributes for all sub-geometries for which they may not be constant. attribute variables are assumed to be spatially constant throughout all geometries. attribute variables are assumed to be spatially constant throughout all geometries. attribute variables are assumed to be spatially constant throughout all geometries. attribute variables are assumed to be spatially constant throughout all geometries. GDAL Message 1: Layer name '106-servicearea' adjusted to '106_servicearea' for XML validity.|
 init_data_directory|function|e281fed9d34bbc22
 download_certificate_pdf|function|94d90e2ce93d6c24
 st_write_or_overwrite|function|5f978e582742d3cf
@@ -658,10 +661,12 @@ format_plss_patches|function|69f8f5afe11170cf
 filter_certificates_csv|function|f427676b7994ad8a
 generate_and_export_geojson|function|50cfeaf854f63544
 save_plss_patches|function|ccf5ab35f345f271
+create_unalaska_service_area|function|95cf2a57af61a072
 generate_and_export_raw_geojson|function|3c2b9bd3c40b3b9e
 build_certificates_df|function|9dbaf73278cbc29e
 process_chronology|function|989e7a566a744558
 download_certificate_chronology|function|a22ecc69335d571f
 fetch_certificates_list|function|a95221923a48b680
-data_directory|stem|de10f85cdb1fb31b|114237a898d97bc8|d6fe2beea28270b7|2101570749|/Users/liam/repos/utility-service-areas/data|t20480.1616580707s|s87088211b|87088211|file|local|vector|||0.668||
-electric_service_areas_cleaned_patched|stem|db70b39421d3c3bc|4685ec955ac4a0cb|3acae03c46e0f29f|-1121670428|/Users/liam/repos/utility-service-areas/service-areas.geojson|t20480.1635966184s|s1247480b|1247480|file|local|vector|||1.259||
+unalaska_service_area_kml|stem|0f64423f69405167|48580bc8ecc8abd7|e8c8dc737ace0996|-677214227|/Users/liam/repos/utility-service-areas/data/106-servicearea.kml|t20516.9396472989s|s21326b|21326|file|local|vector|||1.236|attribute variables are assumed to be spatially constant throughout all geometries. attribute variables are assumed to be spatially constant throughout all geometries. attribute variables are assumed to be spatially constant throughout all geometries. attribute variables are assumed to be spatially constant throughout all geometries. repeating attributes for all sub-geometries for which they may not be constant. attribute variables are assumed to be spatially constant throughout all geometries. attribute variables are assumed to be spatially constant throughout all geometries. attribute variables are assumed to be spatially constant throughout all geometries. attribute variables are assumed to be spatially constant throughout all geometries. GDAL Message 1: Layer name '106-servicearea' adjusted to '106_servicearea' for XML validity.|
+data_directory|stem|43c996f6ecf0f624|114237a898d97bc8|d6fe2beea28270b7|2101570749|/Users/liam/repos/utility-service-areas/data|t20516.9396472813s|s15744b|15744|file|local|vector|||0||
+electric_service_areas_cleaned_patched|stem|739ae1417acc4a20|d2a01265f05d88cb|2636db7e7a408c92|-1121670428|/Users/liam/repos/utility-service-areas/service-areas.geojson|t20516.9396708308s|s1756826b|1756826|file|local|vector|||1.01||

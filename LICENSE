@@ -1,3 +1,10 @@
+All files in this repository are subject to the below license, with the exception of:
+
+- unalaska-islands.geojson - Island boundaries exported from OpenStreetMap via Overpass Turbo. OpenStreetMap is open data, licensed under the Open Data Commons Open Database License (ODbL) by the OpenStreetMap Foundation (OSMF). https://overpass-turbo.eu/
+- pacific-ocean.geojson - Ocean/water body boundries around the Aleutian Islands exported from the USGS National Hydrography Dataset (NHD) service from The National Map. https://hydro.nationalmap.gov/arcgis/rest/services/nhd/MapServer
+
+---------------
+
 Copyright (c) 2025 Alaska Center for Energy and Power
 
 ------
