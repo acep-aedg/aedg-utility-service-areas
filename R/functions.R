@@ -167,7 +167,9 @@ st_write_or_overwrite <- function(sf_object, file_path) {
   if (file.exists(file_path)) {
     file.remove(file_path)
   }
-  st_write(sf_object, file_path)
+  
+  drop_z_from_object <- st_zm(sf_object, drop = TRUE, what = "ZM")
+  st_write(drop_z_from_object, file_path)
 }
 
 generate_and_export_raw_geojson <- function(kml_file_paths, certificates_csv, out_file) {
