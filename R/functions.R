@@ -417,6 +417,12 @@ save_plss_patches <- function(patch, certificates, patch_effective_versions) {
   }
 }
 
+create_unalaska_service_area <- function(){
+  source("generate-unalaska-service-area.R")
+  st_write_or_overwrite(generate_unalaska_service_area()$geometry, "data/106-servicearea.kml")
+  return(normalizePath("data/106-servicearea.kml"))
+}
+
 generate_and_export_geojson <- function(kml_file_paths, certificates, out_file, merge_patches, patch_effective_versions) {
   get_merge_geom <- function(cert_num, geom, kml_date) {
     patch_rows <- merge_patches %>% filter(cert1 == cert_num)

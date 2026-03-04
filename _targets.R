@@ -239,8 +239,13 @@ list(
     format = "file"
   ),
   tar_target(
+    name = unalaska_service_area_kml,
+    command = create_unalaska_service_area(),
+    format = "file"
+  ),
+  tar_target(
     name = electric_service_areas_cleaned_patched,
-    command = generate_and_export_geojson(append(certificate_kmls, plss_patches_kmls), certificates_with_kml_and_chronology_metadata, "service-areas.geojson", merge_patches, patch_effective_versions),
+    command = generate_and_export_geojson(append(certificate_kmls, append(plss_patches_kmls, unalaska_service_area_kml)), certificates_with_kml_and_chronology_metadata, "service-areas.geojson", merge_patches, patch_effective_versions),
     format = "file"
   )#,
   #### for dev

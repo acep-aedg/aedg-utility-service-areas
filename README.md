@@ -11,7 +11,7 @@ The goal of this project is to create a single geospatial file in GeoJSON format
 
 The pipeline is written using the R package `targets`. Clone the repository and open an R console, the run the following commands to execute the pipeline. Be patient, it may take up to 40 minutes to download all the service area files.
 
-1. Run ``targets::tar_destroy()`` to delete any cached files.
+1. Run ``targets::tar_destroy()`` to delete any cached files (optional).
 2. Run ``targets::tar_make()`` to run the pipeline.
 
 ## Metadata/documentation
