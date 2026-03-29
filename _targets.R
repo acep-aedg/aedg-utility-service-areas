@@ -185,6 +185,7 @@ list(
       395, "2002-11-12",
       709, "2006-10-09",
       # KMLs missing from RCA's site
+      53, NA,
       289, NA,
       741, NA,
       765, NA,
@@ -203,7 +204,7 @@ list(
       169, 688, # AVEC acquired service area of City of Ekwok (cert #688) https://rca.alaska.gov/RCAWeb/ViewFile.aspx?id=8c915917-efe4-41ca-8d7d-1cb7534b19a9
       169, 407, # AVEC acquired service area of City of Kobuk (cert #407) https://rca.alaska.gov/RCAWeb/ViewFile.aspx?id=2f3dee1f-e202-434b-8f0a-714714ca3682
       169, 43, # AVEC acquired service area of Bethel Utilities Corporation (cert #43) https://rca.alaska.gov/RCAWeb/ViewFile.aspx?id=6eeb6425-ce1f-4c2f-b765-dfd3505e299f
-      # Yakutat is missing a KML, so we can't merge it in
+      169, 53, # AVEC acquired service area of City of Yakutat (cert #53) https://rca.alaska.gov/RCAWeb/ViewFile.aspx?id=36efe4af-3662-4968-b0da-f0e17ae3f99a
       169, 729, # AVEC acquired service area of Twin Hills (cert #729) https://rca.alaska.gov/RCAWeb/ViewFile.aspx?id=677d0f01-25b2-4c01-bf9b-bea7358300f9
       ## End AVEC
       8, 121 # CEA acquired service area of ML&P (cert #121) https://github.com/acep-uaf/utility-service-areas/issues/9#issuecomment-3054393380
@@ -223,6 +224,13 @@ list(
       395, c("S002S079W28", "S002S079W29", "S002S079W32", "S002S079W33"), # Fixing error in Puvurnaq Power Company service area description https://github.com/acep-uaf/utility-service-areas/issues/47
       709, c("F014N007W19_S2_S2", "F014N007W29_NW4", "F014N007W29_S2", "F014N007W30_N2", "F014N007W30_SE4", "F014N007W32_N2"), # Fixing error in Stevens Village service area description https://github.com/acep-aedg/aedg-utility-service-areas/issues/21
       # Creating missing KMLs https://github.com/acep-uaf/utility-service-areas/issues/8
+      53, c("C027S033E20_SE4", "C027S033E21_S2", "C027S033E24", "C027S033E25", "C027S033E26_S2", "C027S033E27", 
+            "C027S033E28", "C027S033E29_E2", "C027S033E32_NE4", "C027S033E33", "C027S033E34", "C027S033E35", "C027S033E36",
+            "C027S034E19", "C027S034E20", "C027S034E21", "C027S034E22", "C027S034E27", "C027S034E28",
+            "C027S034E29", "C027S034E30", "C027S034E31", "C027S034E32", "C027S034E33", "C027S034E34",
+            "C028S033E01", "C028S033E02", "C028S033E03", "C028S033E11_N2", "C028S033E12", "C028S033E13_NE4",
+            "C028S034E03", "C028S034E04", "C028S034E05", "C028S034E06", "C028S034E07", "C028S034E08", "C028S034E09", 
+            "C028S034E10", "C028S034E15", "C028S034E16", "C028S034E17", "C028S034E18", "C028S034E20_N2"), # Yakutat (special case b/c we have to create an inactive cert's KML and immediately merge it with AVEC)
       289, c("S058S086W25", "S058S086W26", "S058S086W31", "S058S086W32", "S058S086W33", "S058S086W34",
              "S058S086W35", "S058S086W36", "S059S086W01", "S059S086W02", "S059S086W03", "S059S086W04",
              "S059S086W05", "S059S086W06", "S059S086W09_E2", "S059S086W10", "S059S086W11", "S059S086W12",
