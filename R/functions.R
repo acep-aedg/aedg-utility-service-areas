@@ -383,21 +383,17 @@ build_certificates_df <- function(input_certs_df, certificates_chronology) {
 
 ### Start PLSS functions
 
-#' Parse an aliquot code into a subdivide_polygon-ready set of parameters
-#' @param aliquot Character like "NE4", "N2", "SW4". NULL if no aliquot.
-#' @return A list with `direction` and `fraction` (denominator as integer), or NULL
-parse_aliquot <- function(aliquot) {
-  if (is.null(aliquot) || is.na(aliquot)) return(NULL)
+#' Parse and validate a single aliquot step like "NE4", "N2", "SW4"
+#' @param step A single aliquot step string
+#' @return A list with `direction` and `fraction` (denominator as integer)
+parse_aliquot_step <- function(step) {
+  parsed <- str_match(step, "^([NSEW]{1,2})([24])$")
   
-  parsed <- str_match(aliquot, "^([NSEW]{1,2})([24])$")
-  
-  if (is.na(parsed[1, 1])) stop(glue("Invalid aliquot code: '{aliquot}'"))
+  if (is.na(parsed[1, 1])) stop(glue("Invalid aliquot code: '{step}'"))
   
   direction <- parsed[1, 2]
   fraction  <- as.integer(parsed[1, 3])
-  # Enforce allowed direction/fraction combinations:
-  # - halves (2): N, S, E, W
-  # - quarters (4): NE, NW, SE, SW
+  
   valid_dirs <- if (identical(fraction, 2L)) {
     c("N", "S", "E", "W")
   } else if (identical(fraction, 4L)) {
@@ -405,17 +401,33 @@ parse_aliquot <- function(aliquot) {
   } else {
     character(0)
   }
-  if (!(direction %in% valid_dirs)) {
-    stop(glue("Invalid aliquot code: '{aliquot}'"))
-  }
-  if (!(fraction == 2 | fraction == 4)) {
-    stop(glue("Invalid fraction: '{fraction}'"))
-  }
   
-  return(list(
-    direction = direction,
-    fraction  = fraction
-  ))
+  if (!(direction %in% valid_dirs)) stop(glue("Invalid aliquot code: '{step}'"))
+  
+  return (list(direction = direction, fraction = fraction))
+}
+
+#' Parse a chained aliquot string into a list of steps
+#' @param aliquot Character like "NE4", "S2_S2", "NE4_S2". NULL/NA if no aliquot.
+#' @return A list of parsed steps (each with `direction` and `fraction`), or NULL
+parse_aliquot <- function(aliquot) {
+  if (is.null(aliquot) || is.na(aliquot)) return(NULL)
+  
+  steps <- str_split(aliquot, "_")[[1]]
+  return (map(steps, parse_aliquot_step))
+}
+
+#' Apply a chained aliquot string to a polygon by iteratively subdividing
+#' @param poly An sf polygon (single section)
+#' @param aliquot Character like "NE4", "S2_S2", or NA
+#' @return sf polygon clipped to the aliquot
+apply_aliquots <- function(poly, aliquot) {
+  steps <- parse_aliquot(aliquot)
+  if (is.null(steps)) return(poly) # Return polygon unchanged
+  
+  return (reduce(steps, function(p, step) {
+    subdivide_polygon(p, step$direction, step$fraction)
+  }, .init = poly))
 }
 
 #' Clip a square polygon (PLSS Section) to an aliquot part (N2, SE4, etc.)
@@ -462,11 +474,12 @@ format_plss_patches <- function(plss_patches) {
     group_by(cert) %>%
     summarise(
       query_string = paste0(
-        "(MTRS = '", mtrs, "')",
+        "(MTRS = '", unique(mtrs), "')",
         collapse = " OR "
       ),
-      # Carry aliquots along, keyed by mtrs, for use after fetch
-      aliquot_map = list(setNames(aliquot, mtrs)),
+      # Carry aliquots along for use after fetch
+      # Key by full description so duplicate section with different aliquots are preserved
+      aliquot_map = list(setNames(aliquot, corrected_plss_description)),
       .groups = "drop"
     ) %>%
     mutate(query_url = glue(
@@ -481,25 +494,26 @@ save_plss_patches <- function(patch, certificates, patch_effective_versions) {
   if (nrow(orig_kml_row) > 0 && nrow(patch_version_row) > 0) {
     if (orig_kml_row$kml_most_recent_update_date == patch_version_row$expected_kml_most_recent_update_date || is.na(patch_version_row$expected_kml_most_recent_update_date)) {
       out_path <- glue("data/{patch$cert}-servicearea-plss-fix.kml")
-      aliquot_map <- patch$aliquot_map[[1]]  # named vector: mtrs -> aliquot code
+      aliquot_map <- patch$aliquot_map[[1]]  # named by full description... "S059S086W09_E2" etc.
       
       sections <- st_read(patch$query_url)
       
-      # For any section that has an aliquot suffix, clip it
-      sections <- sections %>%
-        rowwise() %>%
-        mutate(geometry = {
-          aliquot_code <- aliquot_map[MTRS]
-          if (!is.na(aliquot_code)) {
-            parsed <- parse_aliquot(aliquot_code)
-            subdivide_polygon(geometry, parsed$direction, parsed$fraction)
-          } else {
-            geometry
-          }
-        }) %>%
-        ungroup()
+      # For each entry in aliquot_map, find the matching section and apply its aliquot (or if none, keep original geom)
+      clipped <- imap(aliquot_map, function(aliquot_code, description) {
+        mtrs <- str_extract(description, "^[^_]+")
+        section <- sections %>% filter(MTRS == mtrs)
+        apply_aliquots(section, aliquot_code) # If there is no aliquot code, this will result in no change to the geometry
+      }) %>%
+        bind_rows()
 
-      st_write_or_overwrite(st_union(sections), out_path)
+      clipped <- st_make_valid(clipped) %>% 
+        st_transform(3338) %>%
+        st_snap(x = ., y = ., tolerance = 0.12) %>%  # 0.12 meters = about 4.7 inches
+        st_transform(4326) %>%
+        st_make_valid() %>%
+        st_union()
+      
+      st_write_or_overwrite(clipped, out_path)
       message(glue("PLSS patch for certificate {patch$cert} saved to {out_path}"))
       return(normalizePath(out_path))
     } else {
