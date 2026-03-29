@@ -183,6 +183,7 @@ list(
       412, "1988-11-28",
       365, "1990-04-25",
       395, "2002-11-12",
+      709, "2006-10-09",
       # KMLs missing from RCA's site
       289, NA,
       741, NA,
@@ -215,11 +216,12 @@ list(
       # PLSS description format: 
       # principal meridian, 3 digit township # and direction, 3 digit range # and direction, two digit section #
       # optional: Some service areas may be more precisely defined using aliquots/subsections. This is represented by a suffix in the following format:
-      # _[part] - such as NE4 for NE 1/4, N2 for northern 1/2, etc.
+      # _[part] - such as NE4 for NE 1/4, N2 for northern 1/2, etc. - can be nested. for example "N 1/2 of N 1/2" as _N2_N2
       635, c("S009N067W05", "S009N067W06", "S010N067W31", "S010N067W32"), # Fixing error in Akiak service area description https://github.com/acep-uaf/utility-service-areas/issues/11
       412, c("S010N068W31", "S010N069W36"), # Fixing error in Akiachak service area description https://github.com/acep-uaf/utility-service-areas/issues/12
       365, c("S001N086W19", "S001N086W20", "S001N086W21", "S001N086W28", "S001N086W29", "S001N086W30"), # Fixing error in Chefornak service area description https://github.com/acep-uaf/utility-service-areas/issues/16,
       395, c("S002S079W28", "S002S079W29", "S002S079W32", "S002S079W33"), # Fixing error in Puvurnaq Power Company service area description https://github.com/acep-uaf/utility-service-areas/issues/47
+      709, c("F014N007W19_S2_S2", "F014N007W29_NW4", "F014N007W29_S2", "F014N007W30_N2", "F014N007W30_SE4", "F014N007W32_N2"), # Fixing error in Stevens Village service area description https://github.com/acep-aedg/aedg-utility-service-areas/issues/21
       # Creating missing KMLs https://github.com/acep-uaf/utility-service-areas/issues/8
       289, c("S058S086W25", "S058S086W26", "S058S086W31", "S058S086W32", "S058S086W33", "S058S086W34",
              "S058S086W35", "S058S086W36", "S059S086W01", "S059S086W02", "S059S086W03", "S059S086W04",
