@@ -381,20 +381,97 @@ build_certificates_df <- function(input_certs_df, certificates_chronology) {
     ungroup()
 }
 
+### Start PLSS functions
+
+#' Parse an aliquot code into a subdivide_polygon-ready set of parameters
+#' @param aliquot Character like "NE4", "N2", "SW4". NULL if no aliquot.
+#' @return A list with `direction` and `fraction` (denominator as integer), or NULL
+parse_aliquot <- function(aliquot) {
+  if (is.null(aliquot) || is.na(aliquot)) return(NULL)
+  
+  parsed <- str_match(aliquot, "^([NSEW]{1,2})([24])$")
+  
+  if (is.na(parsed[1, 1])) stop(glue("Invalid aliquot code: '{aliquot}'"))
+  
+  direction <- parsed[1, 2]
+  fraction  <- as.integer(parsed[1, 3])
+  # Enforce allowed direction/fraction combinations:
+  # - halves (2): N, S, E, W
+  # - quarters (4): NE, NW, SE, SW
+  valid_dirs <- if (identical(fraction, 2L)) {
+    c("N", "S", "E", "W")
+  } else if (identical(fraction, 4L)) {
+    c("NE", "NW", "SE", "SW")
+  } else {
+    character(0)
+  }
+  if (!(direction %in% valid_dirs)) {
+    stop(glue("Invalid aliquot code: '{aliquot}'"))
+  }
+  if (!(fraction == 2 | fraction == 4)) {
+    stop(glue("Invalid fraction: '{fraction}'"))
+  }
+  
+  return(list(
+    direction = direction,
+    fraction  = fraction
+  ))
+}
+
+#' Clip a square polygon (PLSS Section) to an aliquot part (N2, SE4, etc.)
+#' @param poly An sf polygon (single section)
+#' @param direction "N", "S", "E", "W", "NE", "NW", "SE", "SW"
+#' @param fraction 2 (half) or 4 (quarter)
+#' @return sf polygon clipped to the aliquot
+subdivide_polygon <- function(poly, direction, fraction) {
+  bb <- st_bbox(poly)
+  mid_x <- (bb[["xmin"]] + bb[["xmax"]]) / 2
+  mid_y <- (bb[["ymin"]] + bb[["ymax"]]) / 2
+  
+  crop_bb <- if (fraction == 2) {
+    switch(direction,
+           N = st_bbox(c(xmin = bb[["xmin"]], ymin = mid_y,      xmax = bb[["xmax"]], ymax = bb[["ymax"]])),
+           S = st_bbox(c(xmin = bb[["xmin"]], ymin = bb[["ymin"]], xmax = bb[["xmax"]], ymax = mid_y     )),
+           E = st_bbox(c(xmin = mid_x,      ymin = bb[["ymin"]], xmax = bb[["xmax"]], ymax = bb[["ymax"]])),
+           W = st_bbox(c(xmin = bb[["xmin"]], ymin = bb[["ymin"]], xmax = mid_x,      ymax = bb[["ymax"]])),
+           stop(glue("Invalid direction '{direction}' for half"))
+    )
+  } else if (fraction == 4) {
+    switch(direction,
+           NE = st_bbox(c(xmin = mid_x,      ymin = mid_y,      xmax = bb[["xmax"]], ymax = bb[["ymax"]])),
+           NW = st_bbox(c(xmin = bb[["xmin"]], ymin = mid_y,      xmax = mid_x,      ymax = bb[["ymax"]])),
+           SE = st_bbox(c(xmin = mid_x,      ymin = bb[["ymin"]], xmax = bb[["xmax"]], ymax = mid_y     )),
+           SW = st_bbox(c(xmin = bb[["xmin"]], ymin = bb[["ymin"]], xmax = mid_x,      ymax = mid_y     )),
+           stop(glue("Invalid direction '{direction}' for quarter"))
+    )
+  } else {
+    stop(glue("Invalid fraction: {fraction}. Must be 2 or 4."))
+  }
+  
+  return (st_crop(poly, crop_bb) %>%
+    st_cast("POLYGON"))
+}
+
 format_plss_patches <- function(plss_patches) {
   plss_patches %>%
     unnest(corrected_plss_description) %>%
+    mutate(
+      mtrs    = str_remove(corrected_plss_description, "_.*$"),
+      aliquot = str_extract(corrected_plss_description, "(?<=_).+$")  # Positive lookbehind
+    ) %>%
     group_by(cert) %>%
     summarise(
       query_string = paste0(
-        "(MTRS = '", corrected_plss_description, "')",
+        "(MTRS = '", mtrs, "')",
         collapse = " OR "
       ),
+      # Carry aliquots along, keyed by mtrs, for use after fetch
+      aliquot_map = list(setNames(aliquot, mtrs)),
       .groups = "drop"
     ) %>%
     mutate(query_url = glue(
       "https://arcgis.dnr.alaska.gov/arcgis/rest/services/OpenData/ReferenceGrid_PLSSgridUnclipped/MapServer/1/query?where={URLencode(query_string)}",
-      "&returnGeometry=true&f=geojson"
+      "&returnGeometry=true&outFields=MTRS&f=geojson"
     ))
 }
 
@@ -404,8 +481,25 @@ save_plss_patches <- function(patch, certificates, patch_effective_versions) {
   if (nrow(orig_kml_row) > 0 && nrow(patch_version_row) > 0) {
     if (orig_kml_row$kml_most_recent_update_date == patch_version_row$expected_kml_most_recent_update_date || is.na(patch_version_row$expected_kml_most_recent_update_date)) {
       out_path <- glue("data/{patch$cert}-servicearea-plss-fix.kml")
-      # Todo: fix this, there's no point in deleting and recreating them, PLSS is not changing
-      st_write_or_overwrite(st_union(st_read(patch$query_url)), out_path)
+      aliquot_map <- patch$aliquot_map[[1]]  # named vector: mtrs -> aliquot code
+      
+      sections <- st_read(patch$query_url)
+      
+      # For any section that has an aliquot suffix, clip it
+      sections <- sections %>%
+        rowwise() %>%
+        mutate(geometry = {
+          aliquot_code <- aliquot_map[MTRS]
+          if (!is.na(aliquot_code)) {
+            parsed <- parse_aliquot(aliquot_code)
+            subdivide_polygon(geometry, parsed$direction, parsed$fraction)
+          } else {
+            geometry
+          }
+        }) %>%
+        ungroup()
+
+      st_write_or_overwrite(st_union(sections), out_path)
       message(glue("PLSS patch for certificate {patch$cert} saved to {out_path}"))
       return(normalizePath(out_path))
     } else {
@@ -424,6 +518,8 @@ create_unalaska_service_area <- function(){
   st_write_or_overwrite(generate_unalaska_service_area()$geometry, "data/106-servicearea.kml")
   return(normalizePath("data/106-servicearea.kml"))
 }
+
+### End PLSS functions
 
 generate_and_export_geojson <- function(kml_file_paths, certificates, out_file, merge_patches, patch_effective_versions) {
   get_merge_geom <- function(cert_num, geom, kml_date) {
