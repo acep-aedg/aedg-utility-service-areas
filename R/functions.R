@@ -393,9 +393,28 @@ parse_aliquot <- function(aliquot) {
   
   if (is.na(parsed[1, 1])) stop(glue("Invalid aliquot code: '{aliquot}'"))
   
-  return (list(
-    direction = parsed[1, 2],
-    fraction  = as.integer(parsed[1, 3])
+  direction <- parsed[1, 2]
+  fraction  <- as.integer(parsed[1, 3])
+  # Enforce allowed direction/fraction combinations:
+  # - halves (2): N, S, E, W
+  # - quarters (4): NE, NW, SE, SW
+  valid_dirs <- if (identical(fraction, 2L)) {
+    c("N", "S", "E", "W")
+  } else if (identical(fraction, 4L)) {
+    c("NE", "NW", "SE", "SW")
+  } else {
+    character(0)
+  }
+  if (!(direction %in% valid_dirs)) {
+    stop(glue("Invalid aliquot code: '{aliquot}'"))
+  }
+  if (!(fraction == 2 | fraction == 4)) {
+    stop(glue("Invalid fraction: '{fraction}'"))
+  }
+  
+  return(list(
+    direction = direction,
+    fraction  = fraction
   ))
 }
 
