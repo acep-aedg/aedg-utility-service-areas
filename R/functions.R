@@ -491,8 +491,8 @@ format_plss_patches <- function(plss_patches) {
 save_plss_patches <- function(patch, certificates, patch_effective_versions) {
   orig_kml_row <- certificates %>% filter(certificate_number == patch$cert)
   patch_version_row <- patch_effective_versions %>% filter(cert == patch$cert)
-  if (nrow(orig_kml_row) > 0 && nrow(patch_version_row) > 0) {
-    if (orig_kml_row$kml_most_recent_update_date == patch_version_row$expected_kml_most_recent_update_date || is.na(patch_version_row$expected_kml_most_recent_update_date)) {
+  if (nrow(patch_version_row) > 0) {
+    if ((nrow(orig_kml_row) > 0 && orig_kml_row$kml_most_recent_update_date == patch_version_row$expected_kml_most_recent_update_date) || is.na(patch_version_row$expected_kml_most_recent_update_date)) {
       out_path <- glue("data/{patch$cert}-servicearea-plss-fix.kml")
       aliquot_map <- patch$aliquot_map[[1]]  # named by full description... "S059S086W09_E2" etc.
       
@@ -545,7 +545,13 @@ generate_and_export_geojson <- function(kml_file_paths, certificates, out_file, 
         patched_geom <- geom
         for (cert2 in patch_rows$cert2) {
           # TODO: get rid of 'st_as_s2(): dropping Z and/or M coordinate' console spam
-          patch_geom <- st_geometry(st_read(glue("data/{cert2}-servicearea.kml"), quiet = TRUE))
+          plss_path <- glue("data/{cert2}-servicearea-plss-fix.kml")
+          if (file.exists(plss_path)) {
+            cert2_path <- plss_path
+          } else {
+            cert2_path <- glue("data/{cert2}-servicearea.kml")
+          }
+          patch_geom <- st_geometry(st_read(cert2_path, quiet = TRUE))
           patched_geom <- st_union(patched_geom, patch_geom)
           message(glue("Patch applied to certificate {cert_num}, merged with certificate {cert2}"))
         }
