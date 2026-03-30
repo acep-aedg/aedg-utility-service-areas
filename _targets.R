@@ -246,6 +246,11 @@ list(
     ) %>% format_plss_patches()
   ),
   tar_target(
+    name = delete_existing_plss_patches,
+    command = file.remove(list.files("data", pattern = "-plss-fix.kml", full.names = TRUE)),
+    cue = tar_cue(mode = "always")
+  ),
+  tar_target(
     name = plss_patches_kmls,
     command = save_plss_patches(plss_patches, certificates_with_kml_and_chronology_metadata, patch_effective_versions),
     pattern = map(plss_patches),
