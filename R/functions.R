@@ -529,8 +529,8 @@ save_plss_patches <- function(patch, certificates, patch_effective_versions) {
 
 create_unalaska_service_area <- function(){
   source("generate-unalaska-service-area.R")
-  st_write_or_overwrite(generate_unalaska_service_area()$geometry, "data/106-servicearea.kml")
-  return(normalizePath("data/106-servicearea.kml"))
+  st_write_or_overwrite(generate_unalaska_service_area()$geometry, "data/106-servicearea-manual.kml")
+  return(normalizePath("data/106-servicearea-manual.kml"))
 }
 
 ### End PLSS functions
@@ -599,6 +599,12 @@ generate_and_export_geojson <- function(kml_file_paths, certificates, out_file, 
     rowwise() %>%
     mutate(geometry = get_merge_geom(certificate_number, geometry, kml_most_recent_update_date)) %>%
     ungroup()
+  
+  merged_patched <- merged_patched %>%
+    st_transform(3338) %>%
+    st_simplify(dTolerance = 1, preserveTopology = TRUE) %>%
+    st_transform(4326) %>%
+    st_make_valid()
   
   # Reformat field names
   
